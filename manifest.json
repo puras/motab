@@ -1,7 +1,10 @@
 {
   "manifest_version": 3,
   "name": "MoTab",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "自定义新标签页：背景 + 时钟 + 欢迎信息",
-  "chrome_url_overrides": { "new_tab": "newtab.html" }
+  "chrome_url_overrides": { "new_tab": "newtab.html" },
+  "permissions": [
+    "storage"
+  ]
 }
