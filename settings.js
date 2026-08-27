@@ -83,3 +83,38 @@ function applyBackground(bg) {
 
 // 冒烟示例（仅在扩展真实页面里由控制台手动调用）：
 window.__applyBackgroundDemo = () => applyBackground({ ...DEFAULT_BG, dim: 0.5 });
+
+// ============================================================
+// 存储区：chrome.storage.local 封装
+// ============================================================
+
+function storageAvailable() {
+  try {
+    return typeof chrome !== "undefined" &&
+           !!(chrome.storage && chrome.storage.local);
+  } catch (_) {
+    return false;
+  }
+}
+
+function loadBg() {
+  return new Promise((resolve) => {
+    if (!storageAvailable()) return resolve({ ...DEFAULT_BG });
+    chrome.storage.local.get([STORAGE_KEY], (res) => {
+      resolve(sanitizeSettings(res && res[STORAGE_KEY]));
+    });
+  });
+}
+
+function saveBg(bg) {
+  if (!storageAvailable()) return Promise.resolve();
+  return chrome.storage.local.set({ [STORAGE_KEY]: bg });
+}
+
+function debounce(fn, wait) {
+  let timer = null;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
+  };
+}
