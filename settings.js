@@ -59,3 +59,27 @@ function sanitizeSettings(raw) {
     blur: clampBlur(numOrDefault(bg.blur, DEFAULT_BG.blur))
   };
 }
+
+// ============================================================
+// 渲染区：把 bg 设置应用到 DOM
+// ============================================================
+
+function backgroundSrcOf(bg) {
+  if (bg.type === "data") return bg.data;
+  if (bg.type === "url") return bg.url;
+  return "assets/wallpaper.jpg";
+}
+
+function applyBackground(bg) {
+  const bgEl = document.getElementById("bg-layer");
+  const overlayEl = document.querySelector(".overlay");
+  if (!bgEl || !overlayEl) return;
+
+  bgEl.style.backgroundImage = `url("${backgroundSrcOf(bg)}")`;
+  bgEl.style.filter = bg.blur > 0 ? `blur(${bg.blur}px)` : "";
+  bgEl.style.transform = bg.blur > 0 ? "scale(1.06)" : "";
+  overlayEl.style.opacity = String(bg.dim);
+}
+
+// 冒烟示例（仅在扩展真实页面里由控制台手动调用）：
+window.__applyBackgroundDemo = () => applyBackground({ ...DEFAULT_BG, dim: 0.5 });

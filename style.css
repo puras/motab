@@ -9,7 +9,15 @@ html, body {
 }
 
 body {
-  background: #1a1a1a url("assets/wallpaper.jpg") center/cover no-repeat fixed;
+  background: #1a1a1a;
+}
+
+/* 背景专用图层：模糊滤镜只作用于此层，不影响文字 */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: #1a1a1a center/cover no-repeat;
 }
 
 .overlay {
@@ -17,11 +25,12 @@ body {
   inset: 0;
   background: rgba(0, 0, 0, 0.25);
   pointer-events: none;
+  z-index: 1;
 }
 
 .stage {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   height: 100%;
   display: flex;
   flex-direction: column;
