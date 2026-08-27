@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>background 测试</title></head>
+<body>
+<h1>background 纯函数测试</h1>
+<pre id="out">运行中...</pre>
+<script src="../settings.js"></script>
+<script>
+let pass = 0, fail = 0;
+const lines = [];
+function check(name, actual, expected) {
+  const a = JSON.stringify(actual), e = JSON.stringify(expected);
+  const ok = a === e;
+  if (ok) pass++; else fail++;
+  lines.push(`${ok ? "PASS" : "FAIL"}  ${name}  expect=${e}  got=${a}`);
+}
+
+// --- sanitizeSettings 整体回退 ---
+check("sanitize(undefined)", sanitizeSettings(undefined), DEFAULT_BG);
+check("sanitize(null)", sanitizeSettings(null), DEFAULT_BG);
+check("sanitize(number)", sanitizeSettings(42), DEFAULT_BG);
+
+// --- sanitizeSettings 字段级 ---
+check("合法 data 全字段",
+  sanitizeSettings({ type:"data", data:"data:image/jpeg;base64,AA",
+                     url:"javascript:x", dim:-2, blur:99 }),
+  { type:"data", data:"data:image/jpeg;base64,AA", url:"", dim:0, blur:20 });
+check("未知 type 回退 default",
+  sanitizeSettings({ type:"bogus" }).type, "default");
+check("dim 非数字取默认",
+  sanitizeSettings({}).dim, 0.25);
+check("blur 非数字取默认",
+  sanitizeSettings({}).blur, 0);
+check("url 类型缺 url 回退 default",
+  sanitizeSettings({ type:"url", url:"" }).type, "default");
+check("data 类型缺 data 回退 default",
+  sanitizeSettings({ type:"data" }).type, "default");
+check("非 http(s) URL 清空",
+  sanitizeSettings({ type:"url", url:"ftp://a.com/x.png" }),
+  { type:"default", data:"", url:"", dim:0.25, blur:0 });
+check("含引号 URL 清空",
+  sanitizeSettings({ type:"url", url:'https://a.com/x")y' }).url, "");
+
+// --- clamp01 / clampBlur ---
+check("clamp01 下界",   clamp01(-0.5), 0);
+check("clamp01 中间值", clamp01(0.37), 0.37);
+check("clamp01 上界",   clamp01(1.7),  1);
+check("clamp01 NaN 返 min", clamp01(NaN), 0);
+check("clampBlur 负值", clampBlur(-3),  0);
+check("clampBlur 范围内", clampBlur(9.5), 9.5);
+check("clampBlur 上界", clampBlur(25), 20);
+
+// --- targetSize ---
+check("小图原样", targetSize(1920, 1080), { width:1920, height:1080 });
+check("宽图缩放", targetSize(8000, 4000), { width:3840, height:1920 });
+check("竖图长边为准", targetSize(1000, 2000), { width:1000, height:2000 });
+check("超大竖图", targetSize(2560, 9000), { width:1092, height:3840 });
+check("四舍五入", targetSize(7000, 3000), { width:3840, height:1646 });
+
+lines.push("");
+lines.push(`总计 ${pass} pass / ${fail} fail`);
+document.getElementById("out").textContent = lines.join("\n");
+</script>
+</body>
+</html>
