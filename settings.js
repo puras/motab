@@ -12,20 +12,6 @@ const DEFAULT_BG = Object.freeze({
   blur: 0
 });
 
-function clamp(v, min, max) {
-  v = Number(v);
-  if (!Number.isFinite(v)) return min;
-  return Math.min(max, Math.max(min, v));
-}
-
-function clamp01(v) { return clamp(v, 0, 1); }
-
-function clampBlur(v) { return clamp(v, 0, 20); }
-
-function numOrDefault(v, fallback) {
-  return (typeof v === "number" && Number.isFinite(v)) ? v : fallback;
-}
-
 function targetSize(w, h, maxEdge = 3840) {
   const scale = Math.min(1, maxEdge / Math.max(w, h));
   return {
@@ -108,14 +94,6 @@ function saveBg(bg) {
   return chrome.storage.local.set({ [STORAGE_KEY]: bg });
 }
 
-function debounce(fn, wait) {
-  let timer = null;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), wait);
-  };
-}
-
 // ============================================================
 // 上传处理区：文件压缩、URL 探测
 // ============================================================
@@ -159,8 +137,6 @@ function probeImageUrl(url, timeoutMs = 8000) {
 // ============================================================
 
 let currentBg = { ...DEFAULT_BG };
-
-function el(id) { return document.getElementById(id); }
 
 function setStatus(msg, isError = false) {
   const s = el("bg-status");
