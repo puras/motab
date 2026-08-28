@@ -13,6 +13,29 @@
     <div id="date" class="date" aria-label="当前日期">--</div>
     <div id="greeting" class="greeting" aria-label="欢迎信息">--</div>
   </main>
+  <button id="motab-gear" class="gear" aria-label="设置背景">&#9881;</button>
+  <section id="motab-panel" class="panel" hidden>
+    <h2>背景设置</h2>
+    <div class="row">
+      <label class="btn-upload">上传图片<input type="file" id="bg-file" accept="image/*" hidden></label>
+      <button type="button" id="bg-reset">恢复默认</button>
+    </div>
+    <div class="row">
+      <input type="url" id="bg-url" placeholder="粘贴图片 URL（http/https）">
+      <button type="button" id="bg-url-apply">应用</button>
+    </div>
+    <div class="slider-row">
+      <span>蒙版深浅</span>
+      <input type="range" id="bg-dim" min="0" max="100" step="1">
+      <output id="bg-dim-val">25%</output>
+    </div>
+    <div class="slider-row">
+      <span>背景模糊</span>
+      <input type="range" id="bg-blur" min="0" max="20" step="1">
+      <output id="bg-blur-val">0px</output>
+    </div>
+    <p id="bg-status" class="status" role="status"></p>
+  </section>
   <script src="settings.js"></script>
   <script src="app.js"></script>
 </body>
