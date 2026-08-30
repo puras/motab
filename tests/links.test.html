@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>links 测试</title></head>
+<body>
+<h1>links 纯函数测试</h1>
+<pre id="out">运行中...</pre>
+<script src="../main.js"></script>
+<script src="../links.js"></script>
+<script>
+let pass = 0, fail = 0;
+const lines = [];
+function check(name, actual, expected) {
+  const a = JSON.stringify(actual), e = JSON.stringify(expected);
+  const ok = a === e;
+  if (ok) pass++; else fail++;
+  lines.push(`${ok ? "PASS" : "FAIL"}  ${name}  expect=${e}  got=${a}`);
+}
+
+// --- parseHost ---
+check("parseHost https",   parseHost("https://github.com"), "github.com");
+check("parseHost www 去前缀", parseHost("https://www.bbc.co.uk"), "bbc.co.uk");
+check("parseHost 失败",     parseHost("not a url"), "");
+check("parseHost 多段",     parseHost("https://mail.google.com/foo"), "mail.google.com");
+check("parseHost 大小写",   parseHost("HTTPS://GitHub.COM/abc"), "github.com");
+check("parseHost 空",       parseHost(""), "");
+check("parseHost file",     parseHost("file:///etc"), "");
+
+// --- nameFromHost ---
+check("name github.com",          nameFromHost("github.com"), "Github");
+check("name mail.google.com",     nameFromHost("mail.google.com"), "Mail");
+check("name www 已被 parseHost 去掉", nameFromHost("github.com"), "Github");
+check("name bbc.co.uk → 不在白名单则取尾段",
+  nameFromHost("bbc.co.uk"), "Uk");
+check("name 单段",                 nameFromHost("localhost"), "Localhost");
+check("name io",                   nameFromHost("vercel.io"), "Vercel");
+check("name gov",                  nameFromHost("usa.gov"), "Usa");
+check("name edu",                  nameFromHost("mit.edu"), "Mit");
+check("name app",                  nameFromHost("linear.app"), "Linear");
+check("name dev",                  nameFromHost("vite.dev"), "Vite");
+check("name 空",                   nameFromHost(""), "");
+
+// --- iconUrlForHost ---
+check("icon github",  iconUrlForHost("github.com"), "https://icons.duckduckgo.com/ip3/github.com.ico");
+check("icon 含点",    iconUrlForHost("mail.google.com"), "https://icons.duckduckgo.com/ip3/mail.google.com.ico");
+check("icon 空",      iconUrlForHost(""), "https://icons.duckduckgo.com/ip3/.ico");
+
+// --- validateLinkUrl ---
+check("v 合法 https",     validateLinkUrl("https://a.com"), true);
+check("v 合法 http",      validateLinkUrl("http://a.com"), true);
+check("v 缺协议",         validateLinkUrl("a.com"), false);
+check("v 含空格",         validateLinkUrl("https://a .com"), false);
+check("v 含引号",         validateLinkUrl('https://a"x.com'), false);
+check("v ftp",            validateLinkUrl("ftp://a.com"), false);
+check("v 空",             validateLinkUrl(""), false);
+
+// --- sanitizeLinks 整体回退 ---
+check("sanitize(undefined)", sanitizeLinks(undefined), DEFAULT_LINKS);
+check("sanitize(null)",      sanitizeLinks(null), DEFAULT_LINKS);
+check("sanitize(number)",    sanitizeLinks(42), DEFAULT_LINKS);
+check("sanitize 空对象",      sanitizeLinks({}), { items: [] });
+check("sanitize 缺 items",   sanitizeLinks({foo:1}), { items: [] });
+
+// --- sanitizeLinks 字段净化 ---
+const raw = { items: [
+  { id: "l_a", name: "Gh",  url: "javascript:x", icon: '<svg onload=x>' },
+  { id: "l_b", name: "Yt",  url: "https://yt.com", icon: "" },
+  { id: "l_c", name: "",    url: "ftp://x.com", icon: "https://i.c/x.png" }
+]};
+const cleaned = sanitizeLinks(raw);
+check("非法 url 项被剔除",
+  cleaned.items.map(i=>i.id), ["l_b"]);
+check("合法项保留 name/url/icon",
+  cleaned.items[0],
+  { id:"l_b", name:"Yt", url:"https://yt.com", icon:"" });
+
+// --- moveItem ---
+const arr = [{id:"a",n:1},{id:"b",n:2},{id:"c",n:3},{id:"d",n:4}];
+check("move b → 末位",
+  moveItem(arr, "b", 3).map(x=>x.id), ["a","c","d","b"]);
+check("move d → 0 位",
+  moveItem(arr, "d", 0).map(x=>x.id), ["d","a","b","c"]);
+check("move a → 1 位",
+  moveItem(arr, "a", 1).map(x=>x.id), ["b","a","c","d"]);
+check("move 未知 id 不变",
+  moveItem(arr, "z", 2).map(x=>x.id), ["a","b","c","d"]);
+check("move 越界 toIndex 截断到末位",
+  moveItem(arr, "a", 99).map(x=>x.id), ["b","c","d","a"]);
+check("move 负 toIndex 钳到 0",
+  moveItem(arr, "d", -5).map(x=>x.id), ["d","a","b","c"]);
+check("move 非数组入参",
+  moveItem(null, "a", 0), []);
+
+lines.push("");
+lines.push(`总计 ${pass} pass / ${fail} fail`);
+document.getElementById("out").textContent = lines.join("\n");
+</script>
+</body>
+</html>
