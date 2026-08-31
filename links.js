@@ -76,3 +76,30 @@ function moveItem(items, fromId, toIndex) {
   next.splice(target, 0, moved);
   return next;
 }
+
+// ============================================================
+// 存储区：chrome.storage.local 封装
+// ============================================================
+
+function linksStorageAvailable() {
+  try {
+    return typeof chrome !== "undefined" &&
+           !!(chrome.storage && chrome.storage.local);
+  } catch (_) {
+    return false;
+  }
+}
+
+function loadLinks() {
+  return new Promise((resolve) => {
+    if (!linksStorageAvailable()) return resolve({ items: [...DEFAULT_LINKS.items] });
+    chrome.storage.local.get([STORAGE_KEY_LINKS], (res) => {
+      resolve(sanitizeLinks(res && res[STORAGE_KEY_LINKS]));
+    });
+  });
+}
+
+function saveLinks(links) {
+  if (!linksStorageAvailable()) return Promise.resolve();
+  return chrome.storage.local.set({ [STORAGE_KEY_LINKS]: links });
+}
