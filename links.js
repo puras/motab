@@ -168,6 +168,8 @@ async function initLinks() {
   renderCards(currentLinks);
   bindLinksPanel();
   renderLinksList();
+  attachDragHandlers(document.getElementById("cards"), ".card");
+  attachDragHandlers(document.getElementById("link-list"), ".link-row");
 }
 
 // ============================================================
@@ -310,6 +312,74 @@ function bindLinksPanel() {
     iconInput.value = "";
     hint.textContent = "已保存";
     hint.classList.remove("is-error");
+  });
+}
+
+// ============================================================
+// 拖拽区：HTML5 原生 D&D，#cards 与 #link-list 共用同一逻辑
+// ============================================================
+
+let dragFromId = null;
+
+function findCardOrRow(target) {
+  return target.closest && target.closest("[data-id]");
+}
+
+function indexFromPoint(container, x, y, selector) {
+  const els = [...container.querySelectorAll(selector)];
+  for (let i = 0; i < els.length; i++) {
+    const r = els[i].getBoundingClientRect();
+    if (y < r.top + r.height / 2) return i;
+  }
+  return els.length;
+}
+
+function attachDragHandlers(container, selector) {
+  if (!container) return;
+
+  const clearMarks = () => {
+    container.classList.remove("drop-before", "drop-after");
+    [...container.querySelectorAll(selector)].forEach(el =>
+      el.classList.remove("is-dragging", "drop-before", "drop-after"));
+  };
+
+  container.addEventListener("dragstart", (e) => {
+    const el = findCardOrRow(e.target);
+    if (!el) return;
+    dragFromId = el.dataset.id;
+    el.classList.add("is-dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", dragFromId);
+  });
+
+  container.addEventListener("dragover", (e) => {
+    if (!dragFromId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    const idx = indexFromPoint(container, e.clientX, e.clientY, selector);
+    [...container.querySelectorAll(selector)].forEach((el, i) => {
+      el.classList.toggle("drop-before", i === idx);
+      el.classList.toggle("drop-after", i === idx - 1);
+    });
+  });
+
+  container.addEventListener("dragleave", (e) => {
+    if (e.target === container) clearMarks();
+  });
+
+  container.addEventListener("drop", async (e) => {
+    e.preventDefault();
+    if (!dragFromId) return;
+    const idx = indexFromPoint(container, e.clientX, e.clientY, selector);
+    const newItems = moveItem(currentLinks, dragFromId, idx);
+    dragFromId = null;
+    clearMarks();
+    await persistAndRender(newItems);
+  });
+
+  container.addEventListener("dragend", () => {
+    dragFromId = null;
+    clearMarks();
   });
 }
 
