@@ -267,3 +267,124 @@ body {
 .tab:hover { color: rgba(255, 255, 255, 0.85); }
 
 .panel { width: 320px; } /* 覆写 280px */
+
+/* ---- 面板：快捷入口编辑器 ---- */
+
+#panel-links .empty {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.link-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+.link-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: grab;
+  font-size: 12px;
+}
+
+.link-row.is-dragging { opacity: 0.4; }
+.link-row.drop-before { box-shadow: inset 0 2px 0 #fff; }
+.link-row.drop-after  { box-shadow: inset 0 -2px 0 #fff; }
+
+.link-row .handle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  user-select: none;
+}
+
+.link-row img {
+  width: 20px; height: 20px; border-radius: 4px; object-fit: contain;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.link-row .meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.link-row .meta strong {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link-row .meta span {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link-row button.del {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.link-row button.del:hover { color: #ff9d9d; }
+
+.link-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.link-form input {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+}
+
+.link-form .form-row {
+  display: flex; gap: 6px;
+}
+
+.link-form button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.link-form button:hover { background: rgba(255, 255, 255, 0.22); }
+.link-form button.primary { background: rgba(120, 200, 255, 0.4); }
+.link-form button.primary:hover { background: rgba(120, 200, 255, 0.6); }
+
+.link-form .hint {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
+}
+
+.link-form .hint.is-error { color: #ff9d9d; }

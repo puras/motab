@@ -164,7 +164,153 @@ function renderCards(items) {
 
 async function initLinks() {
   const links = await loadLinks();
-  renderCards(links.items);
+  currentLinks = links.items;
+  renderCards(currentLinks);
+  bindLinksPanel();
+  renderLinksList();
+}
+
+// ============================================================
+// 面板编辑区：表单 + 列表 + 删除
+// ============================================================
+
+let currentLinks = [];
+let panelBound = false;
+
+function makeId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return "l_" + crypto.randomUUID().slice(0, 8);
+  return "l_" + Math.random().toString(36).slice(2, 10);
+}
+
+function renderLinksList() {
+  const root = document.getElementById("link-list");
+  if (!root) return;
+  root.replaceChildren();
+  if (currentLinks.length === 0) {
+    const e = document.createElement("div");
+    e.className = "empty";
+    e.textContent = "暂无快捷入口";
+    root.appendChild(e);
+    return;
+  }
+  for (const it of currentLinks) {
+    const row = document.createElement("div");
+    row.className = "link-row";
+    row.draggable = true;
+    row.dataset.id = it.id;
+
+    const handle = document.createElement("span");
+    handle.className = "handle";
+    handle.textContent = "⋮⋮";
+
+    const img = document.createElement("img");
+    img.alt = "";
+    img.src = it.icon || iconUrlForHost(parseHost(it.url) || "");
+    img.addEventListener("error", () => { img.style.visibility = "hidden"; });
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    const name = document.createElement("strong");
+    name.textContent = it.name || it.url;
+    const url = document.createElement("span");
+    url.textContent = it.url;
+    meta.appendChild(name);
+    meta.appendChild(url);
+
+    const del = document.createElement("button");
+    del.className = "del";
+    del.type = "button";
+    del.textContent = "×";
+    del.title = "删除";
+    del.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      currentLinks = currentLinks.filter(x => x.id !== it.id);
+      await saveLinks({ items: currentLinks });
+      renderLinksList();
+      renderCards(currentLinks);
+    });
+
+    row.appendChild(handle);
+    row.appendChild(img);
+    row.appendChild(meta);
+    row.appendChild(del);
+    root.appendChild(row);
+  }
+}
+
+async function persistAndRender(newItems) {
+  currentLinks = newItems;
+  await saveLinks({ items: currentLinks });
+  renderLinksList();
+  renderCards(currentLinks);
+}
+
+function autofillFromUrl(url) {
+  const host = parseHost(url);
+  if (!host) return;
+  const nameInput = el("link-form-name");
+  const iconInput = el("link-form-icon");
+  if (nameInput && !nameInput.value) nameInput.value = nameFromHost(host);
+  if (iconInput && !iconInput.value) iconInput.value = iconUrlForHost(host);
+}
+
+function bindLinksPanel() {
+  if (panelBound) return;
+  panelBound = true;
+
+  // 在 #panel-links 容器内插入结构
+  const panelLinks = document.getElementById("panel-links");
+  if (!panelLinks) return;
+  panelLinks.innerHTML = `
+    <h2>快捷入口</h2>
+    <div id="link-list" class="link-list"></div>
+    <div class="link-form">
+      <input type="url" id="link-form-url" placeholder="Link（http/https）">
+      <div class="form-row">
+        <input type="text" id="link-form-name" placeholder="Name">
+        <button type="button" id="link-form-autofill">自动填充</button>
+      </div>
+      <input type="url" id="link-form-icon" placeholder="Icon URL（可留空，自动从 Link 推导）">
+      <div class="form-row">
+        <button type="button" id="link-form-save" class="primary">保存</button>
+      </div>
+      <p class="hint">提示：填写 Link 后失焦或回车，会自动填入 Name 和 Icon</p>
+    </div>
+  `;
+
+  const urlInput = el("link-form-url");
+  const nameInput = el("link-form-name");
+  const iconInput = el("link-form-icon");
+  const hint = panelLinks.querySelector(".hint");
+
+  urlInput.addEventListener("blur", () => autofillFromUrl(urlInput.value.trim()));
+  urlInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); autofillFromUrl(urlInput.value.trim()); }
+  });
+
+  el("link-form-autofill").addEventListener("click", () => autofillFromUrl(urlInput.value.trim()));
+
+  el("link-form-save").addEventListener("click", async () => {
+    const url = urlInput.value.trim();
+    if (!validateLinkUrl(url)) {
+      hint.textContent = "链接格式不正确";
+      hint.classList.add("is-error");
+      return;
+    }
+    const host = parseHost(url);
+    const item = {
+      id: makeId(),
+      name: nameInput.value.trim() || nameFromHost(host),
+      url,
+      icon: iconInput.value.trim() || iconUrlForHost(host)
+    };
+    await persistAndRender([...currentLinks, item]);
+    urlInput.value = "";
+    nameInput.value = "";
+    iconInput.value = "";
+    hint.textContent = "已保存";
+    hint.classList.remove("is-error");
+  });
 }
 
 if (typeof document !== "undefined" && document.getElementById("cards")) {
