@@ -103,3 +103,70 @@ function saveLinks(links) {
   if (!linksStorageAvailable()) return Promise.resolve();
   return chrome.storage.local.set({ [STORAGE_KEY_LINKS]: links });
 }
+
+// ============================================================
+// 渲染区：构造卡片 DOM，favicon 失败时显示首字母色块
+// ============================================================
+
+function fallbackColor(host) {
+  let h = 0;
+  for (let i = 0; i < host.length; i++) h = (h * 31 + host.charCodeAt(i)) & 0xffffffff;
+  return `hsl(${Math.abs(h) % 360}, 60%, 55%)`;
+}
+
+function renderCard(item) {
+  const host = parseHost(item.url) || "";
+  const a = document.createElement("a");
+  a.className = "card";
+  a.href = item.url;
+  a.draggable = true;
+  a.dataset.id = item.id;
+  a.title = item.name || item.url;
+  a.setAttribute("aria-label", a.title);
+
+  const wrap = document.createElement("div");
+  wrap.className = "card-icon-wrap";
+
+  const img = document.createElement("img");
+  img.className = "card-icon";
+  img.alt = "";
+  img.src = item.icon || iconUrlForHost(host);
+  img.addEventListener("error", () => {
+    const first = (item.name || host || "?").trim().charAt(0).toUpperCase() || "?";
+    const fb = wrap.querySelector(".card-fallback");
+    if (fb) fb.textContent = first;
+    a.classList.add("is-fallback");
+  });
+
+  const fb = document.createElement("div");
+  fb.className = "card-fallback";
+  fb.textContent = (item.name || host || "?").trim().charAt(0).toUpperCase() || "?";
+  fb.style.background = fallbackColor(host);
+
+  wrap.appendChild(img);
+  wrap.appendChild(fb);
+
+  const name = document.createElement("span");
+  name.className = "card-name";
+  name.textContent = item.name || host;
+
+  a.appendChild(wrap);
+  a.appendChild(name);
+  return a;
+}
+
+function renderCards(items) {
+  const root = document.getElementById("cards");
+  if (!root) return;
+  root.replaceChildren();
+  for (const it of items) root.appendChild(renderCard(it));
+}
+
+async function initLinks() {
+  const links = await loadLinks();
+  renderCards(links.items);
+}
+
+if (typeof document !== "undefined" && document.getElementById("cards")) {
+  initLinks();
+}
