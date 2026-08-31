@@ -171,6 +171,7 @@ function bindPanel() {
   const openPanel = () => {
     clearTimeout(idleTimer);
     panel.hidden = false;
+    openPanelToTab(); // 触发 tab 协议（aria-selected / tabpanel.hidden / hash）
     gear.classList.add("is-visible");
   };
   const closePanel = () => { panel.hidden = true; };
@@ -255,6 +256,27 @@ async function initSettings() {
   currentBg = await loadBg();
   applyBackground(currentBg);
   syncControls();
+}
+
+// --- 标签页协议：任何文件可调用 switchTab("bg"|"links") ---
+// 模块级暴露，不依赖 initSettings 触发（保证 vm 沙箱也能读到 window.switchTab）
+window.switchTab = function(name) {
+  document.querySelectorAll(".tab").forEach(b => {
+    const sel = b.dataset.tab === name;
+    b.setAttribute("aria-selected", sel ? "true" : "false");
+  });
+  document.querySelectorAll(".tabpanel").forEach(p => {
+    p.hidden = p.dataset.tab !== name;
+  });
+  if (location.hash !== "#" + name) {
+    history.replaceState(null, "", "#" + name);
+  }
+};
+
+function openPanelToTab() {
+  const hash = location.hash.replace("#", "");
+  const target = (hash === "links" || hash === "bg") ? hash : "bg";
+  switchTab(target);
 }
 
 if (typeof document !== "undefined" && document.getElementById("motab-gear")) {

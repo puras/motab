@@ -237,3 +237,33 @@ body {
   white-space: nowrap;
   text-align: center;
 }
+
+/* ---- 面板标签页 ---- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: -4px -4px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 6px 0 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab[aria-selected="true"] {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.tab:hover { color: rgba(255, 255, 255, 0.85); }
+
+.panel { width: 320px; } /* 覆写 280px */
