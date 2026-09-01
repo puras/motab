@@ -12,12 +12,14 @@
     <div id="time" class="time" aria-label="当前时间">--:--:--</div>
     <div id="date" class="date" aria-label="当前日期">--</div>
     <div id="greeting" class="greeting" aria-label="欢迎信息">--</div>
+    <div id="sub-greeting" class="sub-greeting" aria-label="追加问候" hidden></div>
     <div id="cards" class="cards" aria-label="快捷入口"></div>
   </main>
   <button id="motab-gear" class="gear" aria-label="设置">&#9881;</button>
   <section id="motab-panel" class="panel" hidden>
     <div class="tabs" role="tablist">
       <button type="button" class="tab" role="tab" data-tab="bg" aria-selected="true" aria-controls="panel-bg">背景</button>
+      <button type="button" class="tab" role="tab" data-tab="greeting" aria-selected="false" aria-controls="panel-greeting">问候</button>
       <button type="button" class="tab" role="tab" data-tab="links" aria-selected="false" aria-controls="panel-links">快捷入口</button>
     </div>
     <div id="panel-bg" class="tabpanel" data-tab="bg" role="tabpanel">
@@ -41,6 +43,21 @@
         <output id="bg-blur-val">0px</output>
       </div>
       <p id="bg-status" class="status" role="status"></p>
+    </div>
+    <div id="panel-greeting" class="tabpanel" data-tab="greeting" role="tabpanel" hidden>
+      <h2>问候设置</h2>
+      <div class="field">
+        <label for="greeting-name">名字</label>
+        <input type="text" id="greeting-name" maxlength="20" placeholder="留空则只显示时段问候">
+      </div>
+      <div class="field">
+        <label for="greeting-sub">追加问候语</label>
+        <input type="text" id="greeting-sub" maxlength="50" placeholder="留空则不显示追加句">
+      </div>
+      <div class="row">
+        <button type="button" id="greeting-reset">清空</button>
+      </div>
+      <p id="greeting-status" class="status" role="status"></p>
     </div>
     <div id="panel-links" class="tabpanel" data-tab="links" role="tabpanel" hidden></div>
   </section>

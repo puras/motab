@@ -249,6 +249,48 @@ function bindPanel() {
     syncControls();
     setStatus("已恢复默认");
   });
+
+  // --- 问候：名字 + 追加语 ---
+  // input 的 value 是单一真源；app.js 启动时会把 storage 值回填到 input
+  function readGreetingInputs() {
+    return {
+      name: (el("greeting-name").value || "").trim().slice(0, 20),
+      sub:  (el("greeting-sub").value  || "").trim().slice(0, 50)
+    };
+  }
+
+  function setGreetingStatus(msg, isError = false) {
+    const s = el("greeting-status");
+    if (!s) return;
+    s.textContent = msg;
+    s.classList.toggle("is-error", isError);
+  }
+
+  const debouncedSaveGreeting = debounce(async () => {
+    if (typeof window.saveGreeting === "function") {
+      await window.saveGreeting(readGreetingInputs());
+    }
+  }, 300);
+
+  el("greeting-name").addEventListener("input", () => {
+    if (window.applyGreeting) window.applyGreeting(readGreetingInputs());
+    debouncedSaveGreeting();
+  });
+
+  el("greeting-sub").addEventListener("input", () => {
+    if (window.applyGreeting) window.applyGreeting(readGreetingInputs());
+    debouncedSaveGreeting();
+  });
+
+  el("greeting-reset").addEventListener("click", async () => {
+    el("greeting-name").value = "";
+    el("greeting-sub").value = "";
+    if (window.applyGreeting) window.applyGreeting(readGreetingInputs());
+    if (typeof window.saveGreeting === "function") {
+      await window.saveGreeting(readGreetingInputs());
+    }
+    setGreetingStatus("已清空");
+  });
 }
 
 async function initSettings() {
@@ -258,7 +300,7 @@ async function initSettings() {
   syncControls();
 }
 
-// --- 标签页协议：任何文件可调用 switchTab("bg"|"links") ---
+// --- 标签页协议：任何文件可调用 switchTab("bg"|"greeting"|"links") ---
 // 模块级暴露，不依赖 initSettings 触发（保证 vm 沙箱也能读到 window.switchTab）
 window.switchTab = function(name) {
   document.querySelectorAll(".tab").forEach(b => {
@@ -280,7 +322,7 @@ window.switchTab = function(name) {
 
 function openPanelToTab() {
   const hash = location.hash.replace("#", "");
-  const target = (hash === "links" || hash === "bg") ? hash : "bg";
+  const target = (hash === "links" || hash === "bg" || hash === "greeting") ? hash : "bg";
   switchTab(target);
 }
 

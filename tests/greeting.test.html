@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><title>greeting 测试</title></head>
 <body>
-<h1>greetingFor 测试</h1>
+<h1>greetingFor / composeGreeting 测试</h1>
 <pre id="out">运行中...</pre>
 <script>
 function greetingFor(h) {
@@ -13,20 +13,68 @@ function greetingFor(h) {
   return "夜深了";
 }
 
-const cases = [
+function composeGreeting(g, h) {
+  const period = greetingFor(h);
+  return {
+    line1: g.name ? `${period}，${g.name}` : period,
+    line2: g.sub  || ""
+  };
+}
+
+// 同步 app.js 的 sanitizeGreeting：trim + 长度截断
+function sanitizeGreeting(raw) {
+  const g = (raw && typeof raw === "object") ? raw : {};
+  const name = (typeof g.name === "string") ? g.name.trim().slice(0, 20) : "";
+  const sub  = (typeof g.sub  === "string") ? g.sub.trim().slice(0, 50)  : "";
+  return { name, sub };
+}
+
+const lines = [];
+let pass = 0, fail = 0;
+function check(label, ok, detail) {
+  if (ok) pass++; else fail++;
+  lines.push(`${ok ? "PASS" : "FAIL"}  ${label}${detail ? "  " + detail : ""}`);
+}
+
+// ---- greetingFor 时段分档 ----
+const periodCases = [
   [0,  "夜深了"], [4,  "夜深了"], [5,  "早上好"], [10, "早上好"],
   [11, "中午好"], [12, "中午好"], [13, "下午好"], [17, "下午好"],
   [18, "晚上好"], [22, "晚上好"], [23, "夜深了"]
 ];
-
-let pass = 0, fail = 0;
-const lines = [];
-for (const [h, expected] of cases) {
+for (const [h, expected] of periodCases) {
   const actual = greetingFor(h);
-  const ok = actual === expected;
-  if (ok) pass++; else fail++;
-  lines.push(`${ok ? "PASS" : "FAIL"}  h=${h.toString().padStart(2," ")}  expect="${expected}"  got="${actual}"`);
+  check(`greetingFor h=${h}`, actual === expected, `expect="${expected}" got="${actual}"`);
 }
+
+// ---- composeGreeting 组合（输入已经过 sanitize）----
+const composeCases = [
+  [{ name: "",      sub: ""     }, 9,  { line1: "早上好",       line2: "" }],
+  [{ name: "张三",  sub: ""     }, 9,  { line1: "早上好，张三", line2: "" }],
+  [{ name: "",      sub: "今天也要加油呀" }, 9, { line1: "早上好", line2: "今天也要加油呀" }],
+  [{ name: "李四",  sub: "天气不错"      }, 14, { line1: "下午好，李四", line2: "天气不错" }],
+  [{ name: "王五",  sub: "hi"            }, 20, { line1: "晚上好，王五", line2: "hi" }]
+];
+for (const [g, h, expected] of composeCases) {
+  const actual = composeGreeting(g, h);
+  const ok = actual.line1 === expected.line1 && actual.line2 === expected.line2;
+  check(`composeGreeting h=${h} name="${g.name}" sub="${g.sub}"`,
+    ok, `line1="${actual.line1}" line2="${actual.line2}"`);
+}
+
+// ---- sanitizeGreeting：trim + 长度截断 ----
+const sanitizeCases = [
+  [{ name: "  王五  ",     sub: "  hi  "     }, { name: "王五",     sub: "hi"     }],
+  [{ name: "X".repeat(30), sub: "Y".repeat(80) }, { name: "X".repeat(20), sub: "Y".repeat(50) }],
+  [{ name: 12345,          sub: { evil: true } }, { name: "",        sub: ""       }],
+  [null,                                          { name: "",        sub: ""       }]
+];
+for (const [raw, expected] of sanitizeCases) {
+  const actual = sanitizeGreeting(raw);
+  const ok = actual.name === expected.name && actual.sub === expected.sub;
+  check(`sanitizeGreeting raw=${JSON.stringify(raw)}`, ok, `got=${JSON.stringify(actual)}`);
+}
+
 lines.push("");
 lines.push(`总计 ${pass} pass / ${fail} fail`);
 document.getElementById("out").textContent = lines.join("\n");
