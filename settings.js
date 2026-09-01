@@ -273,6 +273,11 @@ window.switchTab = function(name) {
   }
 };
 
+// 标签点击：调 window.switchTab。Task 5 brief 把这一步"推给 Task 6/7 调用"但它们从未触发，遂在 settings.js 模块级一次挂好。
+(document.querySelectorAll?.(".tab") || []).forEach(b => {
+  b.addEventListener("click", () => window.switchTab(b.dataset.tab));
+});
+
 function openPanelToTab() {
   const hash = location.hash.replace("#", "");
   const target = (hash === "links" || hash === "bg") ? hash : "bg";
