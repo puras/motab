@@ -80,6 +80,7 @@
 | `.cards` 加 `width: 100%` | 卡片退化成纵向一列 | `e98b8df` |
 | `.cards` 加 `max-width: 720px`、`justify-content: center` → `start` | 想要 Chrome 风格的居中块 + 按钮左对齐 | `70afeab` |
 | `iconUrlForHost` 从 DDG 改为站点 `/favicon.ico`（`https://${host}/favicon.ico`） | DDG 图标质量参差，要原站图标 | pending |
+| 面板列表每行加 ✎ 编辑按钮，行内就地编辑 name/url/icon（`enterEditMode`） | 现有条目只能删不能改 | pending |
 
 ## 文件清单
 

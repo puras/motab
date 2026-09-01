@@ -219,6 +219,16 @@ function renderLinksList() {
     meta.appendChild(name);
     meta.appendChild(url);
 
+    const edit = document.createElement("button");
+    edit.className = "edit";
+    edit.type = "button";
+    edit.textContent = "✎";
+    edit.title = "编辑";
+    edit.addEventListener("click", (e) => {
+      e.stopPropagation();
+      enterEditMode(row, it);
+    });
+
     const del = document.createElement("button");
     del.className = "del";
     del.type = "button";
@@ -235,9 +245,90 @@ function renderLinksList() {
     row.appendChild(handle);
     row.appendChild(img);
     row.appendChild(meta);
+    row.appendChild(edit);
     row.appendChild(del);
     root.appendChild(row);
   }
+}
+
+function enterEditMode(row, item) {
+  row.classList.add("is-editing");
+  row.draggable = false;
+
+  const urlVal = item.url;
+  const host = parseHost(urlVal) || "";
+
+  const pane = document.createElement("div");
+  pane.className = "edit-pane";
+
+  const nameIn = document.createElement("input");
+  nameIn.type = "text";
+  nameIn.className = "edit-name";
+  nameIn.placeholder = "Name";
+  nameIn.value = item.name || "";
+
+  const urlIn = document.createElement("input");
+  urlIn.type = "url";
+  urlIn.className = "edit-url";
+  urlIn.placeholder = "Link（http/https）";
+  urlIn.value = urlVal;
+
+  const iconIn = document.createElement("input");
+  iconIn.type = "url";
+  iconIn.className = "edit-icon";
+  iconIn.placeholder = "Icon URL（可留空）";
+  iconIn.value = item.icon || "";
+
+  const hint = document.createElement("p");
+  hint.className = "hint";
+
+  const actions = document.createElement("div");
+  actions.className = "edit-actions";
+
+  const cancel = document.createElement("button");
+  cancel.type = "button";
+  cancel.textContent = "取消";
+  cancel.addEventListener("click", (e) => {
+    e.stopPropagation();
+    renderLinksList();
+  });
+
+  const save = document.createElement("button");
+  save.type = "button";
+  save.className = "primary";
+  save.textContent = "保存";
+  save.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    const newUrl = urlIn.value.trim();
+    if (!validateLinkUrl(newUrl)) {
+      hint.textContent = "链接格式不正确";
+      hint.classList.add("is-error");
+      return;
+    }
+    const newHost = parseHost(newUrl) || host;
+    const newItem = {
+      id: item.id,
+      name: nameIn.value.trim() || nameFromHost(newHost),
+      url: newUrl,
+      icon: iconIn.value.trim() || iconUrlForHost(newHost)
+    };
+    const next = currentLinks.map(x => x.id === item.id ? newItem : x);
+    await persistAndRender(next);
+  });
+
+  actions.appendChild(cancel);
+  actions.appendChild(save);
+
+  pane.appendChild(nameIn);
+  pane.appendChild(urlIn);
+  pane.appendChild(iconIn);
+  pane.appendChild(actions);
+  pane.appendChild(hint);
+
+  // 隐藏视图态子节点
+  for (const c of [...row.children]) c.style.display = "none";
+  row.appendChild(pane);
+  pane.querySelector(".edit-name").focus();
 }
 
 async function persistAndRender(newItems) {
