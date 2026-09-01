@@ -40,9 +40,9 @@ check("name dev",                  nameFromHost("vite.dev"), "Vite");
 check("name 空",                   nameFromHost(""), "");
 
 // --- iconUrlForHost ---
-check("icon github",  iconUrlForHost("github.com"), "https://icons.duckduckgo.com/ip3/github.com.ico");
-check("icon 含点",    iconUrlForHost("mail.google.com"), "https://icons.duckduckgo.com/ip3/mail.google.com.ico");
-check("icon 空",      iconUrlForHost(""), "https://icons.duckduckgo.com/ip3/.ico");
+check("icon github",  iconUrlForHost("github.com"), "https://github.com/favicon.ico");
+check("icon 含点",    iconUrlForHost("mail.google.com"), "https://mail.google.com/favicon.ico");
+check("icon 空",      iconUrlForHost(""), "https:///favicon.ico");
 
 // --- validateLinkUrl ---
 check("v 合法 https",     validateLinkUrl("https://a.com"), true);

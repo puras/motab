@@ -73,6 +73,14 @@
 - z-index 层叠（`.bg` 0 → `.overlay` 1 → `.stage` 2 → `.cards` 3 → `.gear` 10 → `.panel` 11）保持
 - 拖拽视觉（`.drop-before` / `.drop-after` / `.is-dragging`）不动
 
+### 后续追加变更（用户验收时反馈后）
+
+| 变更 | 触发 | commit |
+|---|---|---|
+| `.cards` 加 `width: 100%` | 卡片退化成纵向一列 | `e98b8df` |
+| `.cards` 加 `max-width: 720px`、`justify-content: center` → `start` | 想要 Chrome 风格的居中块 + 按钮左对齐 | `70afeab` |
+| `iconUrlForHost` 从 DDG 改为站点 `/favicon.ico`（`https://${host}/favicon.ico`） | DDG 图标质量参差，要原站图标 | pending |
+
 ## 文件清单
 
 | 文件 | 改动类型 | 行数估算 |

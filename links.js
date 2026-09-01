@@ -38,7 +38,7 @@ function nameFromHost(host) {
 }
 
 function iconUrlForHost(host) {
-  return `https://icons.duckduckgo.com/ip3/${host}.ico`;
+  return `https://${host}/favicon.ico`;
 }
 
 function validateLinkUrl(input) {
