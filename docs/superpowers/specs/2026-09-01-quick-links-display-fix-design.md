@@ -58,7 +58,7 @@
 ### CSS 改动（`style.css`）
 
 1. `.stage`：把 `height: 100%` 改为 `min-height: 100%`，允许内容多时垂直扩展
-2. `.cards`：删除 `margin-top: 2rem`（flex `gap` 已经在 `.stage` 里设了 `1.2rem`，无需额外 margin）
+2. `.cards`：删除 `margin-top: 2rem`（flex `gap` 已经在 `.stage` 里设了 `1.2rem`，无需额外 margin），并加 `width: 100%`（因为 `.cards` 现在是 `.stage` 的 flex 子项；不显式给宽度会让 grid 容器收缩到自身最小内容宽度 `minmax(64, 96) × 1 = 64px`，所有卡片退化成纵向一列）
 3. `html, body`：删除 `overflow: hidden`，让纵向滚动可用；保留 `height: 100%`
 
 ### 不变的部分

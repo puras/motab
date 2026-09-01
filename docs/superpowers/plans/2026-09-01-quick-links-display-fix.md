@@ -147,7 +147,7 @@ html, body {
 }
 ```
 
-- [ ] **Step 3: `.cards` 删除 `margin-top`**
+- [ ] **Step 3: `.cards` 删除 `margin-top` 并加 `width: 100%`**
 
 `style.css` 第 169–178 行当前为：
 
@@ -164,12 +164,13 @@ html, body {
 }
 ```
 
-删除 `margin-top: 2rem;` 一行。最终为：
+删除 `margin-top: 2rem;` 一行，并在 `position: relative;` 之后新增 `width: 100%;`（因为 `.cards` 现在是 `.stage` 的 flex 子项；不显式给宽度会让 grid 容器收缩到 `minmax(64, 96) × 1 = 64px`，所有卡片退化成纵向一列）。最终为：
 
 ```css
 .cards {
   position: relative;
   z-index: 3;
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(64px, 96px));
   gap: 12px;
@@ -177,6 +178,8 @@ html, body {
   padding: 0 16px;
 }
 ```
+
+> **背景：** 这一步（width: 100%）是 Task 3 人工验收时用户反馈「纵向一列」后追加的——plan 最初漏算了 flex 子项对 grid 容器宽度的隐性约束。已记录在 ledger。
 
 - [ ] **Step 4: 验证 CSS 改动正确**
 
