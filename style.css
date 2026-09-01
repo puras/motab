@@ -169,10 +169,11 @@ body {
   position: relative;
   z-index: 3;
   width: 100%;
+  max-width: 720px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(64px, 96px));
   gap: 12px;
-  justify-content: center;
+  justify-content: start;
   padding: 0 16px;
 }
 
